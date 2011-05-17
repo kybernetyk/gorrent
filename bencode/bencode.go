@@ -1,3 +1,9 @@
+/*
+	Package bencode implements reading and writing* of 'bencoded'
+	object streams used by the Bittorent protocol.
+
+	* = not implemented yet
+*/
 package bencode
 
 import (
@@ -6,11 +12,19 @@ import (
 	//"fmt"
 )
 
-//a parser struct holding a reference to the token stream and a position pointer
+//A Decoder reads and decodes bencoded objects from an input stream.
+//It returns objects that are either an "Integer", "String", "List" or "Dict".
+//
+//Example usage:
+//	d := bencode.NewDecoder([]byte("i23e4:testi123e"))
+//	for !p.Consumed {
+//		o, _ := p.Decode()
+//		fmt.Printf("obj(%s): %#v\n", reflect.TypeOf(o).Name, o)
+//	}
 type Decoder struct {
 	stream   []byte
 	pos      int
-	Consumed bool
+	Consumed bool //true if we have consumed all tokens
 }
 
 type List []interface{}
@@ -18,17 +32,18 @@ type String string
 type Integer int64
 type Dict map[string]interface{}
 
-//create a new decoder for the given token stream
+
+//NewDecoder creates a new decoder for the given token stream
 func NewDecoder(b []byte) *Decoder {
 	return &Decoder{b, 0, false}
 }
 
-//return one object from Decoder's input stream and advance the pos
+//Decode reads one object from the input stream
 func (self *Decoder) Decode() (res interface{}, err os.Error) {
 	return self.nextObject()
 }
 
-//return all objects from Decoder's input stream and advance to stream end
+//DecodeAll reads all objects from the input stream
 func (self *Decoder) DecodeAll() (res []interface{}, err os.Error) {
 	for {
 		o, e := self.nextObject()
