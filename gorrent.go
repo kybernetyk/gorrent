@@ -39,13 +39,26 @@ func uil() {
 }*/
 
 func main() {
-//	in := "i23ei55e4:test"
-	in := "li23ei55e4:testeli33e3:lole"
-	l, err := bencode.ParseAll([]byte(in))
-	if err != nil {
-		fmt.Printf("unmarshal failed: %s\n", err.String())
-		return
-	}
-	fmt.Printf("unmarshalled: %#v\n", l)
-}
+	//	in := "i23ei55e4:test"
+	in := "i88eli23ei55e4:testeli33e3:lole"
+	//in = "lli4ei5eeli6ei7eee"
 
+	p := bencode.NewParser([]byte(in))
+
+	for !p.Consumed {
+		l, err := p.ParseNext()
+		if err != nil {
+			fmt.Printf("parser error: %s\n", err.String())
+			break
+		}
+		switch l.(type) {
+		case bencode.List:
+			x := l.(bencode.List)
+			for _, o := range x {
+				fmt.Printf("sbject: %#v\n", o)
+			}
+		default:
+			fmt.Printf("object: %#v\n", l)
+		}
+	}
+}

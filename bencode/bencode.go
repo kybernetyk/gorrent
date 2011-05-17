@@ -7,22 +7,28 @@ import (
 
 //a parser struct holding a reference to the token stream and a position pointer
 type Parser struct {
-	stream []byte
-	pos    int
+	stream   []byte
+	pos      int
+	Consumed bool
 }
+
+type List []interface{}
+type String string
+type Integer int64
+type Dict map[string]interface{}
 
 //create a new parser for the given token stream
 func NewParser(stream []byte) *Parser {
-	return &Parser{stream, 0}
+	return &Parser{stream, 0, false}
 }
 
-//wrapper for Parser.ParseOne
+//wrapper for Parser.ParseNext
 //will get one object from the token stream
 //use if you know that there's only one object and you won't
 //need the input stream anymore as you won't get any position information
-func ParseOne(in []byte) (res interface{}, err os.Error) {
+func ParseNext(in []byte) (res interface{}, err os.Error) {
 	p := NewParser(in)
-	return p.ParseOne()
+	return p.ParseNext()
 }
 
 //wrapper for Parser.ParseAll
@@ -33,7 +39,7 @@ func ParseAll(in []byte) (res []interface{}, err os.Error) {
 }
 
 //return one object from Parser's input stream and advance the pos
-func (self *Parser) ParseOne() (res interface{}, err os.Error) {
+func (self *Parser) ParseNext() (res interface{}, err os.Error) {
 	return self.nextObject()
 }
 
@@ -55,19 +61,29 @@ func (self *Parser) ParseAll() (res []interface{}, err os.Error) {
 
 //fetch the next object at position 'pos' in 'stream'
 func (self *Parser) nextObject() (res interface{}, err os.Error) {
+	if self.Consumed {
+		return nil, os.NewError("This parser's token stream is consumed!")
+	}
+
 	switch c := self.stream[self.pos]; {
 	case c == 'i':
-		return self.nextInteger()
+		res, err = self.nextInteger()
 	case c >= '0' && c <= '9':
-		return self.nextString()
+		res, err = self.nextString()
 	case c == 'l':
-			return self.nextList()
+		res, err = self.nextList()
+	default:
+		res = nil
+		err = os.NewError("Couldn't parse '" + string(self.stream) + "' ... '" + string(self.stream[self.pos]) + "'")
 	}
-	return nil, os.NewError("Couldn't parse '" + string(self.stream) + "' ... '" + string(self.stream[self.pos]) + "'")
+	if self.pos >= len(self.stream) {
+		self.Consumed = true
+	}
+	return
 }
 
 //fetches next integer from stream and advances pos pointer
-func (self *Parser) nextInteger() (res int64, err os.Error) {
+func (self *Parser) nextInteger() (res Integer, err os.Error) {
 	if self.stream[self.pos] != 'i' {
 		return 0, os.NewError("No starting 'i' found")
 	}
@@ -84,7 +100,8 @@ func (self *Parser) nextInteger() (res int64, err os.Error) {
 	}
 
 	s := string(self.stream[self.pos+1 : idx])
-	res, err = strconv.Atoi64(s)
+	r, err := strconv.Atoi64(s)
+	res = Integer(r)
 	if err != nil {
 		return
 	}
@@ -94,7 +111,7 @@ func (self *Parser) nextInteger() (res int64, err os.Error) {
 }
 
 //fetches next string from stream and advances pos pointer
-func (self *Parser) nextString() (res string, err os.Error) {
+func (self *Parser) nextString() (res String, err os.Error) {
 	if self.stream[self.pos] < '0' || self.stream[self.pos] > '9' {
 		err = os.NewError("No string length determinator found")
 		return
@@ -125,14 +142,15 @@ func (self *Parser) nextString() (res string, err os.Error) {
 		return
 	}
 
-	len_end++	//skip the ':'
-	res = string(self.stream[len_end : len_end+l])
+	len_end++ //skip the ':'
+	res = String(self.stream[len_end : len_end+l])
 	err = nil
-	self.pos = len_end+l
+	self.pos = len_end + l
 	return
 }
 
-func (self *Parser) nextList() (res []interface{}, err os.Error) {
+//fetches a list (and its contents) from stream and advances pos
+func (self *Parser) nextList() (res List, err os.Error) {
 	if self.stream[self.pos] != 'l' {
 		err = os.NewError("This is not a list!")
 		return
@@ -147,7 +165,7 @@ func (self *Parser) nextList() (res []interface{}, err os.Error) {
 		}
 		res = append(res, o)
 		if self.stream[self.pos] == 'e' {
-			self.pos ++ //skip 'e'
+			self.pos++ //skip 'e'
 			break
 		}
 	}
