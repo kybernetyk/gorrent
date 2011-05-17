@@ -39,10 +39,11 @@ func uil() {
 }*/
 
 func main() {
-	in := "i23ei55e4:test"
-	l, err := bencode.Unmarshal([]byte(in))
+//	in := "i23ei55e4:test"
+	in := "li23ei55e4:testeli33e3:lole"
+	l, err := bencode.ParseAll([]byte(in))
 	if err != nil {
-		fmt.Println("unmarshal failed: %s\n", err.String())
+		fmt.Printf("unmarshal failed: %s\n", err.String())
 		return
 	}
 	fmt.Printf("unmarshalled: %#v\n", l)
