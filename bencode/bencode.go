@@ -3,6 +3,7 @@ package bencode
 import (
 	"strconv"
 	"os"
+	//"fmt"
 )
 
 //a parser struct holding a reference to the token stream and a position pointer
@@ -56,6 +57,8 @@ func (self *Decoder) nextObject() (res interface{}, err os.Error) {
 		res, err = self.nextString()
 	case c == 'l':
 		res, err = self.nextList()
+	case c == 'd':
+		res, err = self.nextDict()
 	default:
 		res = nil
 		err = os.NewError("Couldn't parse '" + string(self.stream) + "' ... '" + string(self.stream[self.pos]) + "'")
@@ -148,6 +151,35 @@ func (self *Decoder) nextList() (res List, err os.Error) {
 			return
 		}
 		res = append(res, o)
+		if self.stream[self.pos] == 'e' {
+			self.pos++ //skip 'e'
+			break
+		}
+	}
+	return
+}
+
+//fetches a dict
+func (self *Decoder) nextDict() (res Dict, err os.Error) {
+	if self.stream[self.pos] != 'd' {
+		err = os.NewError("This is not a dict!")
+		return
+	}
+	res = make(Dict)
+	self.pos++ //skip 'd'
+	for {
+		key, e := self.nextString()
+		if e != nil {
+			err = e
+			return
+		}
+		val, e := self.nextObject()
+		if e != nil {
+			err = e
+			return
+		}
+		//fmt.Printf("key: %s\nval: %#v\n", key, val)
+		res[string(key)] = val
 		if self.stream[self.pos] == 'e' {
 			self.pos++ //skip 'e'
 			break
