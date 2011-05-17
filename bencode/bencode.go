@@ -6,7 +6,7 @@ import (
 )
 
 //a parser struct holding a reference to the token stream and a position pointer
-type Parser struct {
+type Decoder struct {
 	stream   []byte
 	pos      int
 	Consumed bool
@@ -18,33 +18,17 @@ type Integer int64
 type Dict map[string]interface{}
 
 //create a new parser for the given token stream
-func NewParser(stream []byte) *Parser {
-	return &Parser{stream, 0, false}
+func NewDecoder(stream []byte) *Decoder {
+	return &Decoder{stream, 0, false}
 }
 
-//wrapper for Parser.ParseNext
-//will get one object from the token stream
-//use if you know that there's only one object and you won't
-//need the input stream anymore as you won't get any position information
-func ParseNext(in []byte) (res interface{}, err os.Error) {
-	p := NewParser(in)
-	return p.ParseNext()
-}
-
-//wrapper for Parser.ParseAll
-//will return all objects encoded in the token stream
-func ParseAll(in []byte) (res []interface{}, err os.Error) {
-	p := NewParser(in)
-	return p.ParseAll()
-}
-
-//return one object from Parser's input stream and advance the pos
-func (self *Parser) ParseNext() (res interface{}, err os.Error) {
+//return one object from Decoder's input stream and advance the pos
+func (self *Decoder) Decode() (res interface{}, err os.Error) {
 	return self.nextObject()
 }
 
-//return all objects from Parser's input stream and advance to stream end
-func (self *Parser) ParseAll() (res []interface{}, err os.Error) {
+//return all objects from Decoder's input stream and advance to stream end
+func (self *Decoder) DecodeAll() (res []interface{}, err os.Error) {
 	for {
 		o, e := self.nextObject()
 		if e != nil {
@@ -60,7 +44,7 @@ func (self *Parser) ParseAll() (res []interface{}, err os.Error) {
 }
 
 //fetch the next object at position 'pos' in 'stream'
-func (self *Parser) nextObject() (res interface{}, err os.Error) {
+func (self *Decoder) nextObject() (res interface{}, err os.Error) {
 	if self.Consumed {
 		return nil, os.NewError("This parser's token stream is consumed!")
 	}
@@ -83,7 +67,7 @@ func (self *Parser) nextObject() (res interface{}, err os.Error) {
 }
 
 //fetches next integer from stream and advances pos pointer
-func (self *Parser) nextInteger() (res Integer, err os.Error) {
+func (self *Decoder) nextInteger() (res Integer, err os.Error) {
 	if self.stream[self.pos] != 'i' {
 		return 0, os.NewError("No starting 'i' found")
 	}
@@ -111,7 +95,7 @@ func (self *Parser) nextInteger() (res Integer, err os.Error) {
 }
 
 //fetches next string from stream and advances pos pointer
-func (self *Parser) nextString() (res String, err os.Error) {
+func (self *Decoder) nextString() (res String, err os.Error) {
 	if self.stream[self.pos] < '0' || self.stream[self.pos] > '9' {
 		err = os.NewError("No string length determinator found")
 		return
@@ -150,7 +134,7 @@ func (self *Parser) nextString() (res String, err os.Error) {
 }
 
 //fetches a list (and its contents) from stream and advances pos
-func (self *Parser) nextList() (res List, err os.Error) {
+func (self *Decoder) nextList() (res List, err os.Error) {
 	if self.stream[self.pos] != 'l' {
 		err = os.NewError("This is not a list!")
 		return

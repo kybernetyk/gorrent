@@ -43,10 +43,10 @@ func main() {
 	in := "i88eli23ei55e4:testeli33e3:lole"
 	//in = "lli4ei5eeli6ei7eee"
 
-	p := bencode.NewParser([]byte(in))
+	p := bencode.NewDecoder([]byte(in))
 
 	for !p.Consumed {
-		l, err := p.ParseNext()
+		l, err := p.Decode()
 		if err != nil {
 			fmt.Printf("parser error: %s\n", err.String())
 			break
