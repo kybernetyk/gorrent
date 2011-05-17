@@ -1,0 +1,3 @@
+Go implementation of the bencoding protocol
+
+see http://wiki.theory.org/BitTorrentSpecification#bencoding
