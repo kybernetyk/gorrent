@@ -3,6 +3,7 @@ package main
 import (
 	"bencode"
 	"fmt"
+	"reflect"
 )
 
 func main() {
@@ -20,11 +21,13 @@ func main() {
 		switch l.(type) {
 		case bencode.List:
 			x := l.(bencode.List)
+			fmt.Printf("list:\n")
 			for _, o := range x {
-				fmt.Printf("sbject: %#v\n", o)
+				fmt.Printf("\tobj(%s): %#v\n", reflect.TypeOf(o).Name(), o)
 			}
+			fmt.Printf("list_end\n")
 		default:
-			fmt.Printf("object: %#v\n", l)
+			fmt.Printf("obj(%s): %#v\n", reflect.TypeOf(l).Name(), l)
 		}
 	}
 }

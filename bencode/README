@@ -1,3 +1,7 @@
 Go implementation of the bencoding protocol
 
+I played around with io.Reader interface but it made the code
+too complicated. Let's see till I build a simple BT client
+if I need io.Reader support or if feeding with []byte will work.
+
 see http://wiki.theory.org/BitTorrentSpecification#bencoding
