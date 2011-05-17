@@ -9,3 +9,4 @@ _cgo_*
 _obj
 _test
 gorrent
+_test_main.go
