@@ -3,6 +3,8 @@ package bencode
 import (
 	"strconv"
 	"os"
+	"io"
+	"io/ioutil"
 )
 
 //a parser struct holding a reference to the token stream and a position pointer
@@ -17,8 +19,12 @@ type String string
 type Integer int64
 type Dict map[string]interface{}
 
-//create a new parser for the given token stream
-func NewDecoder(stream []byte) *Decoder {
+//create a new decoder for the given token stream
+func NewDecoder(r io.Reader) *Decoder {
+	stream, err := ioutil.ReadAll(r)
+	if err != nil {
+		//what do?
+	}
 	return &Decoder{stream, 0, false}
 }
 
