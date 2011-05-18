@@ -9,7 +9,6 @@ package bencode
 import (
 	"strconv"
 	"os"
-	//"fmt"
 )
 
 //A Decoder reads and decodes bencoded objects from an input stream.
@@ -105,6 +104,8 @@ func (self *Decoder) nextInteger() (res Integer, err os.Error) {
 		if (self.stream[idx] < '0' || self.stream[idx] > '9') && self.stream[idx] != '-' {
 			err = os.NewError("Invalid byte '" + string(self.stream[idx]) + "' in encoded integer.")
 			return
+		} else {
+			validstart = true
 		}
 
 		idx++
