@@ -1,8 +1,7 @@
 /*
-	Package bencode implements reading and writing* of 'bencoded'
+	Package bencode implements reading and writing of 'bencoded'
 	object streams used by the Bittorent protocol.
 
-	* = not implemented yet
 */
 package bencode
 
@@ -22,7 +21,7 @@ import (
 //	}
 type Decoder struct {
 	stream   []byte
-	Pos      int
+	pos      int
 	Consumed bool //true if we have consumed all tokens
 }
 
@@ -46,20 +45,20 @@ func (self *Decoder) DecodeAll() (res []interface{}, err os.Error) {
 			return
 		}
 		res = append(res, o)
-		if self.Pos >= len(self.stream) {
+		if self.pos >= len(self.stream) {
 			break
 		}
 	}
 	return
 }
 
-//fetch the next object at Position 'pos' in 'stream'
+//fetch the next object at position 'pos' in 'stream'
 func (self *Decoder) nextObject() (res interface{}, err os.Error) {
 	if self.Consumed {
 		return nil, os.NewError("This parser's token stream is consumed!")
 	}
 
-	switch c := self.stream[self.Pos]; {
+	switch c := self.stream[self.pos]; {
 	case c == 'i':
 		res, err = self.nextInteger()
 	case c >= '0' && c <= '9':
@@ -70,21 +69,21 @@ func (self *Decoder) nextObject() (res interface{}, err os.Error) {
 		res, err = self.nextDict()
 	default:
 		res = nil
-		err = os.NewError("Couldn't parse '" + string(self.stream) + "' ... '" + string(self.stream[self.Pos]) + "'")
+		err = os.NewError("Couldn't parse '" + string(self.stream) + "' ... '" + string(self.stream[self.pos]) + "'")
 	}
-	if self.Pos >= len(self.stream) {
+	if self.pos >= len(self.stream) {
 		self.Consumed = true
 	}
 	return
 }
 
-//fetches next integer from stream and advances Pos pointer
+//fetches next integer from stream and advances pos pointer
 func (self *Decoder) nextInteger() (res int64, err os.Error) {
-	if self.stream[self.Pos] != 'i' {
+	if self.stream[self.pos] != 'i' {
 		return 0, os.NewError("No starting 'i' found")
 	}
 	validstart := false //flag to check for leading 0's
-	idx := self.Pos + 1
+	idx := self.pos + 1
 	for {
 		if self.stream[idx] == 'e' {
 			break
@@ -109,26 +108,26 @@ func (self *Decoder) nextInteger() (res int64, err os.Error) {
 		}
 	}
 
-	s := string(self.stream[self.Pos+1 : idx])
+	s := string(self.stream[self.pos+1 : idx])
 	r, err := strconv.Atoi64(s)
 	if err != nil {
 		return
 	}
 	res = r
-	self.Pos = idx + 1
+	self.pos = idx + 1
 
 	return
 }
 
-//fetches next string from stream and advances Pos pointer
+//fetches next string from stream and advances pos pointer
 func (self *Decoder) nextString() (res string, err os.Error) {
-	if self.stream[self.Pos] < '0' || self.stream[self.Pos] > '9' {
+	if self.stream[self.pos] < '0' || self.stream[self.pos] > '9' {
 		err = os.NewError("No string length determinator found")
 		return
 	}
 
-	len_start := self.Pos
-	len_end := self.Pos
+	len_start := self.pos
+	len_end := self.pos
 
 	//scan length
 	for {
@@ -155,18 +154,18 @@ func (self *Decoder) nextString() (res string, err os.Error) {
 	len_end++ //skip the ':'
 	res = string(self.stream[len_end : len_end+l])
 	err = nil
-	self.Pos = len_end + l
+	self.pos = len_end + l
 	return
 }
 
-//fetches a list (and its contents) from stream and advances Pos
+//fetches a list (and its contents) from stream and advances pos
 func (self *Decoder) nextList() (res []interface{}, err os.Error) {
-	if self.stream[self.Pos] != 'l' {
+	if self.stream[self.pos] != 'l' {
 		err = os.NewError("This is not a list!")
 		return
 	}
 
-	self.Pos++ //skip 'l'
+	self.pos++ //skip 'l'
 	for {
 		o, e := self.nextObject()
 		if e != nil {
@@ -174,8 +173,8 @@ func (self *Decoder) nextList() (res []interface{}, err os.Error) {
 			return
 		}
 		res = append(res, o)
-		if self.stream[self.Pos] == 'e' {
-			self.Pos++ //skip 'e'
+		if self.stream[self.pos] == 'e' {
+			self.pos++ //skip 'e'
 			break
 		}
 	}
@@ -186,12 +185,12 @@ func (self *Decoder) nextList() (res []interface{}, err os.Error) {
 //bencoded dicts must have their keys sorted lexically. but I guess
 //we can ignore that and work with unsorted maps. (wtf?! sorted maps ...)
 func (self *Decoder) nextDict() (res map[string]interface{}, err os.Error) {
-	if self.stream[self.Pos] != 'd' {
+	if self.stream[self.pos] != 'd' {
 		err = os.NewError("This is not a dict!")
 		return
 	}
 	res = make(map[string]interface{})
-	self.Pos++ //skip 'd'
+	self.pos++ //skip 'd'
 	for {
 		key, e := self.nextString()
 		if e != nil {
@@ -205,8 +204,8 @@ func (self *Decoder) nextDict() (res map[string]interface{}, err os.Error) {
 		}
 		//fmt.Printf("key: %s\nval: %#v\n", key, val)
 		res[string(key)] = val
-		if self.stream[self.Pos] == 'e' {
-			self.Pos++ //skip 'e'
+		if self.stream[self.pos] == 'e' {
+			self.pos++ //skip 'e'
 			break
 		}
 	}
