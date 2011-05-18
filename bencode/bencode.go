@@ -89,12 +89,24 @@ func (self *Decoder) nextInteger() (res Integer, err os.Error) {
 	if self.stream[self.pos] != 'i' {
 		return 0, os.NewError("No starting 'i' found")
 	}
-
+	validstart := false; //flag to check for leading 0's
 	idx := self.pos + 1
 	for {
 		if self.stream[idx] == 'e' {
 			break
 		}
+
+		if self.stream[idx] == '0' && !validstart {
+			err = os.NewError("Leading Zeros are not allowed in bencoded integers!")
+			return
+		}
+
+		//check for bytes != '-' and '0'..'9'
+		if (self.stream[idx] < '0' || self.stream[idx] > '9') && self.stream[idx] != '-' {
+			err = os.NewError("Invalid byte '" + string(self.stream[idx]) + "' in encoded integer.")
+			return
+		}
+
 		idx++
 		if idx >= len(self.stream) {
 			return 0, os.NewError("No ending 'e' found")
