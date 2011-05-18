@@ -4,6 +4,7 @@ LDFLAGS=-e
 TARG=bencode
 
 GOFILES=\
-				bencode.go
+				decoder.go\
+				encoder.go
 
 include $(GOROOT)/src/Make.pkg

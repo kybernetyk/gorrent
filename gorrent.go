@@ -4,7 +4,7 @@ import (
 	"bencode"
 	"fmt"
 	"reflect"
-	"io/ioutil"
+//	"io/ioutil"
 )
 
 func test0r(in string) {
@@ -33,7 +33,7 @@ func test0r(in string) {
 
 
 func main() {
-	in := "i23ei55e4:test"
+	/*in := "i23ei55e4:test"
 	test0r(in)
 	in = "i00123e"
 	test0r(in)
@@ -63,4 +63,24 @@ func main() {
 		return
 	}
 	fmt.Printf("%#v\n", r)
+	dict := r.(bencode.Dict)
+	info := dict["info"].(bencode.Dict)
+	pieces := info["pieces"].(bencode.String)
+	piece := pieces[0:20]
+	fmt.Printf("len: %d\n", len(piece))
+	fmt.Printf("piece: %v\n", []byte(piece))
+	fmt.Printf("enc: %s\n", rfc1738_encode(string(piece)))
+	fmt.Printf("%s\n", rfc1738_encode("\x12\x34\x56\x78\x9a\xbc\xde\xf1\x23\x45\x67\x89\xab\xcd\xef\x12\x34\x56\x78\x9a"))
+	fmt.Printf("%s\n", "%124Vx%9A%BC%DE%F1%23Eg%89%AB%CD%EF%124Vx%9A")
+*/
+	torrent := &MetaInfo{}
+	err := torrent.ReadFromFile("test.torrent")
+	if err != nil {
+		fmt.Println(err.String())
+		return
+	}
+
+	//fmt.Printf("%#v\n", torrent.parsed)
+	torrent.infoHash()
 }
+
