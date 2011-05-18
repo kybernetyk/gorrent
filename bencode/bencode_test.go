@@ -5,7 +5,7 @@ import (
 )
 
 
-func it(t *testing.T, in string, exp Integer, exp_err bool) {
+func it(t *testing.T, in string, exp int64, exp_err bool) {
 	d := NewDecoder([]byte(in))
 	i, err := d.Decode()
 

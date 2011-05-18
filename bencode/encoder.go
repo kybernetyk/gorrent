@@ -14,35 +14,33 @@ func Encode(in interface{}) []byte {
 func encodeObject(in interface{}) []byte {
 	switch reflect.TypeOf(in).Kind() {
 	case reflect.String:
-		return encodeString(in)
+		return encodeString(in.(string))
 	case reflect.Int64:
-		return encodeInteger(in)
+		return encodeInteger(in.(int64))
+	case reflect.Int:
+		i := int64(in.(int))
+		return encodeInteger(i)
 	case reflect.Slice:
-		return encodeList(in)
+		return encodeList(in.([]interface{}))
 	case reflect.Map:
-		return encodeDict(in)
+		return encodeDict(in.(map[string]interface{}))
 	}
 
-	panic("WTF?")
+	panic("Can't encode this type: " + reflect.TypeOf(in).Name())
 }
 
-func encodeString(in interface{}) []byte {
-	o := in.(string)
-	s := string(o)
+func encodeString(s string) []byte {
 	l := len(s)
-
 	ret := fmt.Sprintf("%d:%s", l, s)
 	return []byte(ret)
 }
 
-func encodeInteger(in interface{}) []byte {
-	o := in.(int64)
-	ret := fmt.Sprintf("i%de", o)
+func encodeInteger(i int64) []byte {
+	ret := fmt.Sprintf("i%de", i)
 	return []byte(ret)
 }
 
-func encodeList(in interface{}) []byte {
-	list := in.([]interface{})
+func encodeList(list []interface{}) []byte {
 	ret := []byte("l")
 	for i := 0; i < len(list); i++ {
 		o := list[i]
@@ -52,9 +50,7 @@ func encodeList(in interface{}) []byte {
 	return ret
 }
 
-func encodeDict(in interface{}) []byte {
-	m := in.(map[string]interface{})
-
+func encodeDict(m map[string]interface{}) []byte {
 	//sort the map >.<
 	var keys []string
 	for k, _ := range m {

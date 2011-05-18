@@ -26,11 +26,6 @@ type Decoder struct {
 	Consumed bool //true if we have consumed all tokens
 }
 
-type List []interface{}
-type String string
-type Integer int64
-type Dict map[string]interface{}
-
 
 //NewDecoder creates a new decoder for the given token stream
 func NewDecoder(b []byte) *Decoder {
@@ -84,7 +79,7 @@ func (self *Decoder) nextObject() (res interface{}, err os.Error) {
 }
 
 //fetches next integer from stream and advances Pos pointer
-func (self *Decoder) nextInteger() (res Integer, err os.Error) {
+func (self *Decoder) nextInteger() (res int64, err os.Error) {
 	if self.stream[self.Pos] != 'i' {
 		return 0, os.NewError("No starting 'i' found")
 	}
@@ -116,17 +111,17 @@ func (self *Decoder) nextInteger() (res Integer, err os.Error) {
 
 	s := string(self.stream[self.Pos+1 : idx])
 	r, err := strconv.Atoi64(s)
-	res = Integer(r)
 	if err != nil {
 		return
 	}
+	res = r
 	self.Pos = idx + 1
 
 	return
 }
 
 //fetches next string from stream and advances Pos pointer
-func (self *Decoder) nextString() (res String, err os.Error) {
+func (self *Decoder) nextString() (res string, err os.Error) {
 	if self.stream[self.Pos] < '0' || self.stream[self.Pos] > '9' {
 		err = os.NewError("No string length determinator found")
 		return
@@ -158,14 +153,14 @@ func (self *Decoder) nextString() (res String, err os.Error) {
 	}
 
 	len_end++ //skip the ':'
-	res = String(self.stream[len_end : len_end+l])
+	res = string(self.stream[len_end : len_end+l])
 	err = nil
 	self.Pos = len_end + l
 	return
 }
 
 //fetches a list (and its contents) from stream and advances Pos
-func (self *Decoder) nextList() (res List, err os.Error) {
+func (self *Decoder) nextList() (res []interface{}, err os.Error) {
 	if self.stream[self.Pos] != 'l' {
 		err = os.NewError("This is not a list!")
 		return
@@ -190,12 +185,12 @@ func (self *Decoder) nextList() (res List, err os.Error) {
 //fetches a dict
 //bencoded dicts must have their keys sorted lexically. but I guess
 //we can ignore that and work with unsorted maps. (wtf?! sorted maps ...)
-func (self *Decoder) nextDict() (res Dict, err os.Error) {
+func (self *Decoder) nextDict() (res map[string]interface{}, err os.Error) {
 	if self.stream[self.Pos] != 'd' {
 		err = os.NewError("This is not a dict!")
 		return
 	}
-	res = make(Dict)
+	res = make(map[string]interface{})
 	self.Pos++ //skip 'd'
 	for {
 		key, e := self.nextString()

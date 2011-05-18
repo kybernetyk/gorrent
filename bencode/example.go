@@ -23,7 +23,7 @@ func main() {
 
 	d := make(map[string]interface{}, 10)
 	d["zhort"] = "loli"
-	d["ficken"] = int64(44)
+	d["ficken"] = 44
 	s = string(bencode.Encode(d))
 	fmt.Printf("map: %s\n", s)
 
