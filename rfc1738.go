@@ -26,7 +26,7 @@ func rfc1738_encode(s string) string {
 		b := buf[i]
 		if mustencode(b) {
 			t = append(t, '%')
-			s := fmt.Sprintf("%X", b)
+			s := fmt.Sprintf("%.2X", b)
 			t = append(t, []byte(s)...)
 		} else {
 			t = append(t, b)
