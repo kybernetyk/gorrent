@@ -188,6 +188,8 @@ func (self *Decoder) nextList() (res List, err os.Error) {
 }
 
 //fetches a dict
+//bencoded dicts must have their keys sorted lexically. but I guess
+//we can ignore that and work with unsorted maps. (wtf?! sorted maps ...)
 func (self *Decoder) nextDict() (res Dict, err os.Error) {
 	if self.stream[self.pos] != 'd' {
 		err = os.NewError("This is not a dict!")
