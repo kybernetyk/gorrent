@@ -89,7 +89,7 @@ func (self *Decoder) nextInteger() (res Integer, err os.Error) {
 	if self.stream[self.pos] != 'i' {
 		return 0, os.NewError("No starting 'i' found")
 	}
-	validstart := false; //flag to check for leading 0's
+	validstart := false //flag to check for leading 0's
 	idx := self.pos + 1
 	for {
 		if self.stream[idx] == 'e' {
