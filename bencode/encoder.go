@@ -3,6 +3,7 @@ package bencode
 import (
 	"fmt"
 	"reflect"
+	"sort"
 )
 
 
@@ -47,19 +48,26 @@ func encodeList(in interface{}) []byte {
 		o := list[i]
 		ret = append(ret, encodeObject(o)...)
 	}
-	ret = append(ret, []byte("e")...)
+	ret = append(ret, 'e')
 	return ret
 }
 
 func encodeDict(in interface{}) []byte {
 	m := in.(map[string]interface{})
 
+	//sort the map >.<
+	var keys []string
+	for k, _ := range m {
+		keys = append(keys, k)
+	}
+	sort.SortStrings(keys)
+
 	ret := []byte("d")
-	for k, v := range m {
+	for _, k := range keys {
+		v := m[k]
 		ret = append(ret, encodeString(k)...)
 		ret = append(ret, encodeObject(v)...)
 	}
 	ret = append(ret, 'e')
-
 	return ret
 }
