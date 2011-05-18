@@ -4,6 +4,7 @@ import (
 	"bencode"
 	"fmt"
 	"reflect"
+	"io/ioutil"
 )
 
 func test0r(in string) {
@@ -34,6 +35,12 @@ func test0r(in string) {
 func main() {
 	in := "i23ei55e4:test"
 	test0r(in)
+	in = "i00123e"
+	test0r(in)
+	in = "i-45e"
+	test0r(in)
+	in = "ix23e"
+	test0r(in)
 	in = "i88eli23ei55e4:testeli33e3:lole"
 	test0r(in)
 	in = "lli4ei5eeli6ei7eee"
@@ -43,4 +50,17 @@ func main() {
 	in = "d4:spaml1:a1:bee1:xd4:fick1:oe"
 	test0r(in)
 
+	//test reading a torrent
+	fmt.Printf("Parsing 'test.torrent' ...\n")
+	b, err := ioutil.ReadFile("test.torrent")
+	if err != nil {
+		panic("couldn't open test.torrent")
+	}
+	p := bencode.NewDecoder(b)
+	r, err := p.Decode()
+	if err != nil {
+		fmt.Printf("Couldn't parse torrent: %s\n", err.String())
+		return
+	}
+	fmt.Printf("%#v\n", r)
 }
