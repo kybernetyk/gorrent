@@ -18,8 +18,8 @@ func test0r(in string) {
 			break
 		}
 		switch l.(type) {
-		case bencode.List:
-			x := l.(bencode.List)
+		case []interface{}:
+			x := l.([]interface{})
 			fmt.Printf("\tlist:\n")
 			for _, o := range x {
 				fmt.Printf("\t\tobj(%s): %#v\n", reflect.TypeOf(o).Name(), o)
@@ -81,6 +81,9 @@ func main() {
 	}
 
 	//fmt.Printf("%#v\n", torrent.parsed)
-	torrent.infoHash()
+	b := torrent.InfoHash()
+	s := rfc1738_encode(string(b))
+	fmt.Printf("%s\n", s)
+
 }
 
