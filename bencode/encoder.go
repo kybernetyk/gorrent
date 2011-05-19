@@ -6,6 +6,11 @@ import (
 	"sort"
 )
 
+//Encoder takes care of encoding objects into byte streams.
+//The result of the encoding operation is available in Encoder.Bytes.
+//Consecutive operations are appended to the byte stream.
+//
+//Accepts only string, int/int64, []interface{} and map[string]interface{} as input.
 type Encoder struct {
 	Bytes []byte		//the result byte stream
 }
