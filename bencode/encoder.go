@@ -14,14 +14,21 @@ func NewEncoder() *Encoder {
 	return &Encoder{}
 }
 
-//wrapper for Encoder.Encode
+//Encode is a wrapper for Encoder.Encode.
+//It returns the bencoded byte stream.
 func Encode(in interface{}) []byte {
 	enc := NewEncoder()
 	enc.Encode(in)
 	return enc.Bytes
 }
 
-//encodes an object into a bencoded byte stream
+//Encode encodes an object into a bencoded byte stream.
+//The result of the operation is accessible through Encoder.Bytes.
+//
+//Example:
+//	enc.Encode(23)
+//	enc.Encode("test")
+//	enc.Result //contains 'i23e4:test'
 func (enc *Encoder) Encode(in interface{}) {
 	b := enc.encodeObject(in)
 	if len(b) > 0 {
