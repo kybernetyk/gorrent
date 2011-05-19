@@ -6,51 +6,79 @@ import (
 	"sort"
 )
 
-
-func Encode(in interface{}) []byte {
-	return encodeObject(in)
+type Encoder struct {
+	Bytes []byte		//the result byte stream
 }
 
-func encodeObject(in interface{}) []byte {
+func NewEncoder() *Encoder {
+	return &Encoder{}
+}
+
+//wrapper for Encoder.Encode
+func Encode(in interface{}) []byte {
+	enc := NewEncoder()
+	enc.Encode(in)
+	return enc.Bytes
+}
+
+//encodes an object into a bencoded byte stream
+func (enc *Encoder) Encode(in interface{}) {
+	b := enc.encodeObject(in)
+	if len(b) > 0 {
+		enc.Bytes = append(enc.Bytes, b...)
+	}
+}
+
+func (enc *Encoder) encodeObject(in interface{}) []byte {
 	switch reflect.TypeOf(in).Kind() {
 	case reflect.String:
-		return encodeString(in.(string))
+		return enc.encodeString(in.(string))
 	case reflect.Int64:
-		return encodeInteger(in.(int64))
+		return enc.encodeInteger(in.(int64))
 	case reflect.Int:
 		i := int64(in.(int))
-		return encodeInteger(i)
+		return enc.encodeInteger(i)
 	case reflect.Slice:
-		return encodeList(in.([]interface{}))
+		return enc.encodeList(in.([]interface{}))
 	case reflect.Map:
-		return encodeDict(in.(map[string]interface{}))
+		return enc.encodeDict(in.(map[string]interface{}))
+	default:
+		panic("Can't encode this type: " + reflect.TypeOf(in).Name())
 	}
-
-	panic("Can't encode this type: " + reflect.TypeOf(in).Name())
+	return nil
 }
 
-func encodeString(s string) []byte {
+func (enc *Encoder) encodeString(s string) []byte {
 	l := len(s)
+	if l <= 0 {
+		return nil
+	}
 	ret := fmt.Sprintf("%d:%s", l, s)
 	return []byte(ret)
 }
 
-func encodeInteger(i int64) []byte {
+func (enc *Encoder) encodeInteger(i int64) []byte {
 	ret := fmt.Sprintf("i%de", i)
 	return []byte(ret)
 }
 
-func encodeList(list []interface{}) []byte {
+func (enc *Encoder) encodeList(list []interface{}) []byte {
+	if len(list) <= 0 {
+		return nil
+	}
 	ret := []byte("l")
 	for i := 0; i < len(list); i++ {
 		o := list[i]
-		ret = append(ret, encodeObject(o)...)
+		ret = append(ret, enc.encodeObject(o)...)
 	}
 	ret = append(ret, 'e')
 	return ret
 }
 
-func encodeDict(m map[string]interface{}) []byte {
+func (enc *Encoder) encodeDict(m map[string]interface{}) []byte {
+	if len(m) <= 0 {
+		return nil
+	}
 	//sort the map >.<
 	var keys []string
 	for k, _ := range m {
@@ -61,8 +89,8 @@ func encodeDict(m map[string]interface{}) []byte {
 	ret := []byte("d")
 	for _, k := range keys {
 		v := m[k]
-		ret = append(ret, encodeString(k)...)
-		ret = append(ret, encodeObject(v)...)
+		ret = append(ret, enc.encodeString(k)...)
+		ret = append(ret, enc.encodeObject(v)...)
 	}
 	ret = append(ret, 'e')
 	return ret
