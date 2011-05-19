@@ -1,1 +1,4 @@
 bittorrent client in Go ... (just playing around, so don't expect anything great)
+
+the client itself is licensed under GPL3. packages and parts might be licensed
+differently.
