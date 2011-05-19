@@ -4,9 +4,9 @@ I played around with io.Reader interface but it made the code
 too complicated. We'll see after I've built a simple BT client
 if I need io.Reader support or if feeding with []byte will work.
 
-The encoding capabilities are not that great. It encodes enough
-to generate an info_hash. The only objects "understood" by the
-encoder are string, int/in64, []interface{} and map[string]interface{}.
+The encoder's reflection capabilities are not that great.
+The only objects "understood" by the encoder are string, int/in64, 
+[]interface{} and map[string]interface{}.
 If you need to encode your custom structs, you're welcome to extend
 this package. :)
 
